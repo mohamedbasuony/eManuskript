@@ -4,11 +4,21 @@ from tkinter import filedialog, Toplevel, messagebox
 import cv2
 import numpy as np
 from sklearn.decomposition import PCA
+from PIL import Image, ImageEnhance
 
 # Initialize the main window
 root = ctk.CTk()
 root.state('zoomed')  # Set the window to full screen
 root.title("AppName")
+
+
+pseudocolor_flag = False
+sharpie_flag = False
+power_flag = False
+invert_flag = False
+blurDivide_flag = False
+noiseReduction_flag = False
+PCA_flag = False
 
 # Set the appearance mode of the app to 'dark'
 ctk.set_appearance_mode("dark")
@@ -42,6 +52,8 @@ def generate_pseudocolor_effect(image1_path, image2_path):
 
 
 def pseudocolor():
+    global pseudocolor_flag
+    pseudocolor_flag = True
     def open_file(entry):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -86,6 +98,7 @@ def pseudocolor():
 
             except ValueError as e:
                 messagebox.showerror("Error", str(e))
+
 
     # Calculate the position to center the popup window
     popup_width = 500
@@ -132,6 +145,8 @@ def pseudocolor():
     button_generate.grid(row=0, column=1, padx=10)
 
 
+
+
 # Function to create and display the popup window for Sharpie effect
 def sharpie_effect(image_path):
     image = cv2.imread(image_path)
@@ -158,6 +173,8 @@ def sharpie_effect(image_path):
 
 # Function to create and display the popup window for the Sharpie effect
 def sharpie():
+    global sharpie_flag
+    sharpie_flag = True
     def open_file(entry):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -239,11 +256,6 @@ def sharpie():
     button_generate.grid(row=0, column=1, padx=10)
 
 
-# Function to handle the quit event
-def on_quit():
-    root.quit()
-
-
 # Function to raise image to a given power
 def raise_image_to_power(image_path, power):
     image = cv2.imread(image_path)
@@ -274,6 +286,8 @@ def partial_inversion(image_path, alpha):
 
 # Function to create and display the popup window for the power effect
 def power():
+    global power_flag
+    power_flag = True
     def open_file(entry):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -371,6 +385,8 @@ def power():
 
 # Function to create and display the popup window for the invert effect
 def invert():
+    global invert_flag
+    invert_flag = True
     def open_file(entry):
         file_path = filedialog.askopenfilename()
         if file_path:
@@ -490,7 +506,56 @@ def rotateLeft():
 
 
 def save():
-    print("Save")
+    if result_label.image:
+        # Get the current image from the label
+        image = result_label.current_image_pil
+
+        # Ask the user to choose a file path to save the image
+        file_path = filedialog.asksaveasfilename(defaultextension=".jpg")
+
+        # Save the image to the chosen file path
+        image.save(file_path)
+        print("Image saved successfully.")
+
+        # Save metadata to a text file
+        metadata_file_path = file_path.replace(".jpg", ".txt")
+        with open(metadata_file_path, "w") as metadata_file:
+            metadata_file.write("Technical\n")
+            metadata_file.write("System Manufacturer: \n")
+            metadata_file.write("Lights used: \n")
+            metadata_file.write("Name of photographer: \n")
+            metadata_file.write("Name of processor: \n")
+            metadata_file.write("\n")
+            metadata_file.write("Object\n")
+            metadata_file.write("Name (if any): \n")
+            metadata_file.write("Shelfmark: \n")
+            metadata_file.write("Material: \n")
+            metadata_file.write("Date imaged: \n")
+            metadata_file.write("Institution/owner: \n")
+            metadata_file.write("\n")
+            # Get the processes used
+            processes_used = []
+            if pseudocolor_flag:
+                processes_used.append("Pseudocolor")
+            if sharpie_flag:
+                processes_used.append("Sharpie ")
+            if power_flag:
+                processes_used.append("Power")
+            if invert_flag:
+                processes_used.append("Invert")
+            if blurDivide_flag:
+                processes_used.append("Blur & Divide")
+            if noiseReduction_flag:
+                processes_used.append("Noise Reduction")
+            if PCA_flag:
+                processes_used.append("PCA ")
+
+            # Write the processes used to the metadata file
+            metadata_file.write("Processes used: " + ", ".join(processes_used))
+
+        print("Metadata saved successfully.")
+    else:
+        print("No image to save.")
 
 
 def import_file():
@@ -498,6 +563,8 @@ def import_file():
 
 
 def blur_and_divide(image, blur_value):
+    global blurDivide_flag
+    blurDivide_flag = True
     # Apply Gaussian blur to the image
     blurred_image = cv2.GaussianBlur(image, (blur_value, blur_value), 0)
 
@@ -620,6 +687,8 @@ def blur_and_divide_effect():
 
 
 def pca_transform(image_uv_path, image_lime_path, image_ir_path):
+    global PCA_flag
+    PCA_flag = False
     # Load the three images with effects
     image_uv = cv2.imread(image_uv_path)
     image_lime = cv2.imread(image_lime_path)
@@ -701,7 +770,8 @@ def pca_effect():
 
             except ValueError as e:
                 print(e)
-# Calculate the position to center the popup window
+
+    # Calculate the position to center the popup window
     popup_width = 500
     popup_height = 350
     screen_width = root.winfo_screenwidth()
@@ -753,6 +823,104 @@ def pca_effect():
     button_generate.grid(row=0, column=1, padx=10)
 
 
+def reduce_noise(image_path, kernel_size=5, sigma=1.0):
+    global noiseReduction_flag
+    noiseReduction_flag = True
+    # Read the image
+    image = cv2.imread(image_path)
+    if image is None:
+        raise ValueError("Image not found or path is incorrect")
+
+    # Convert the image from BGR to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+    # Apply Gaussian blur
+    denoised_image = cv2.GaussianBlur(image, (kernel_size, kernel_size), sigma)
+
+    return denoised_image
+
+
+def noise_effect():
+    def open_file(entry):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            entry.configure(state='normal')
+            entry.delete(0, ctk.END)
+            entry.insert(0, file_path)
+            entry.configure(state='readonly')
+
+    def cancel():
+        popup.destroy()
+
+    def generate_effect():
+        image_uv_path = entry_image_uv.get()
+        if image_uv_path:
+            try:
+                transformed_image = reduce_noise(image_uv_path)
+
+                # Convert the processed image to PIL format for displaying in Tkinter
+                transformed_image_pil = Image.fromarray(transformed_image)
+
+                # Resize the image to fit within the main window
+                max_width = root.winfo_width() - 40  # Leave some padding
+                max_height = root.winfo_height() - 200  # Leave some padding for the buttons
+                transformed_image_pil.thumbnail((max_width, max_height), Image.LANCZOS)
+
+                transformed_image_tk = ImageTk.PhotoImage(transformed_image_pil)
+
+                # Close the popup
+                popup.destroy()
+
+                # Remove the welcome label if it exists
+                if label.winfo_exists():
+                    label.pack_forget()
+
+                # Display the PCA transformed image in the main window
+                result_label.configure(image=transformed_image_tk, text="")
+                result_label.image = transformed_image_tk
+                result_label.current_image_pil = transformed_image_pil  # Save the PIL image for rotation
+
+            except ValueError as e:
+                print(e)
+
+    # Calculate the position to center the popup window
+    popup_width = 500
+    popup_height = 350
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    popup_x = int((screen_width - popup_width) / 2)
+    popup_y = int((screen_height - popup_height) / 2)
+
+    popup = Toplevel(root)
+    popup.geometry(f"{popup_width}x{popup_height}+{popup_x}+{popup_y}")
+    popup.title("Upload Images for Noise Reduction Effect")
+
+    frame = ctk.CTkFrame(popup)
+    frame.pack(fill="both", expand=True)
+
+    label_instruction = ctk.CTkLabel(frame, text="Please upload your image:", font=("Helvetica", 14))
+    label_instruction.pack(pady=10)
+
+    frame_inputs = ctk.CTkFrame(frame)
+    frame_inputs.pack(pady=10, padx=10, fill="x")
+
+    label_image_uv = ctk.CTkLabel(frame_inputs, text="Image 1:")
+    label_image_uv.grid(row=0, column=0, pady=5, padx=5, sticky="w")
+    entry_image_uv = ctk.CTkEntry(frame_inputs, width=250)
+    entry_image_uv.grid(row=0, column=1, pady=5, padx=5)
+    button_browse_uv = ctk.CTkButton(frame_inputs, text="Browse", command=lambda: open_file(entry_image_uv))
+    button_browse_uv.grid(row=0, column=2, pady=5, padx=5)
+
+    frame_actions = ctk.CTkFrame(frame)
+    frame_actions.pack(pady=20)
+
+    button_cancel = ctk.CTkButton(frame_actions, text="Cancel", command=cancel, width=100)
+    button_cancel.grid(row=0, column=0, padx=10)
+
+    button_generate = ctk.CTkButton(frame_actions, text="Generate", command=generate_effect, width=100)
+    button_generate.grid(row=0, column=1, padx=10)
+
+
 # Create a frame for the top section
 top_frame = ctk.CTkFrame(root)
 top_frame.pack(side="top", fill="x", pady=10)
@@ -765,26 +933,26 @@ logo_label.grid(row=0, column=0, padx=10, pady=10, sticky="e")
 buttons_frame = ctk.CTkFrame(top_frame)
 buttons_frame.grid(row=0, column=1, padx=10)
 
-button_effect1 = ctk.CTkButton(buttons_frame, text="Pseudocolor", command=pseudocolor, width=100, height=40)
-button_effect2 = ctk.CTkButton(buttons_frame, text="Sharpie", command=sharpie, width=100, height=40)
-button_effect3 = ctk.CTkButton(buttons_frame, text="Power", command=power, width=100, height=40)
-button_effect4 = ctk.CTkButton(buttons_frame, text="Invert", command=invert, width=100, height=40)
-button_effect5 = ctk.CTkButton(buttons_frame, text="Rotate Right", command=rotateRight, width=100, height=40)
-button_effect6 = ctk.CTkButton(buttons_frame, text="Rotate Left", command=rotateLeft, width=100, height=40)
-button_effect7 = ctk.CTkButton(buttons_frame, text="Blur & Divide", command=blur_and_divide_effect, width=100,
+button_pseudocolor = ctk.CTkButton(buttons_frame, text="Pseudocolor", command=pseudocolor, width=100, height=40)
+button_sharpie = ctk.CTkButton(buttons_frame, text="Sharpie", command=sharpie, width=100, height=40)
+button_power = ctk.CTkButton(buttons_frame, text="Power", command=power, width=100, height=40)
+button_invert = ctk.CTkButton(buttons_frame, text="Invert", command=invert, width=100, height=40)
+button_rotateRight = ctk.CTkButton(buttons_frame, text="Rotate Right", command=rotateRight, width=100, height=40)
+button_rotateLift = ctk.CTkButton(buttons_frame, text="Rotate Left", command=rotateLeft, width=100, height=40)
+button_blurDivide = ctk.CTkButton(buttons_frame, text="Blur & Divide", command=blur_and_divide_effect, width=100,
                                height=40)
-button_effect8 = ctk.CTkButton(buttons_frame, text="PCA", command=pca_effect, width=100, height=40)
-button_effect9 = ctk.CTkButton(buttons_frame, text="SAM", width=100, height=40)
+button_noiseReduction= ctk.CTkButton(buttons_frame, text="Noise Reduction", command=noise_effect, width=100, height=40)
+button_PCA = ctk.CTkButton(buttons_frame, text="PCA", command=pca_effect, width=100, height=40)
 
-button_effect1.grid(row=0, column=0, padx=5)
-button_effect2.grid(row=0, column=1, padx=5)
-button_effect3.grid(row=0, column=2, padx=5)
-button_effect4.grid(row=0, column=3, padx=5)
-button_effect5.grid(row=0, column=4, padx=5)
-button_effect6.grid(row=0, column=5, padx=5)
-button_effect7.grid(row=0, column=6, padx=5)
-button_effect8.grid(row=0, column=7, padx=5)
-button_effect9.grid(row=0, column=8, padx=5)
+button_pseudocolor.grid(row=0, column=0, padx=5)
+button_sharpie.grid(row=0, column=1, padx=5)
+button_power.grid(row=0, column=2, padx=5)
+button_invert.grid(row=0, column=3, padx=5)
+button_rotateRight.grid(row=0, column=4, padx=5)
+button_rotateLift.grid(row=0, column=5, padx=5)
+button_blurDivide.grid(row=0, column=6, padx=5)
+button_noiseReduction.grid(row=0, column=7, padx=5)
+button_PCA.grid(row=0, column=8, padx=5)
 
 # Create buttons for save and import
 button_save = ctk.CTkButton(top_frame, text="Save", command=save, width=100, height=40)
