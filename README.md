@@ -1,4 +1,3 @@
----
 project:
   title: "Thoht - Advanced Image Processing Application"
   description: >
