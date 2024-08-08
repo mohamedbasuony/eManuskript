@@ -1,6 +1,6 @@
 # **Thoht - Advanced Image Processing Application**
 
-**Thoht** is a powerful GUI-based application for advanced image processing tasks. Leveraging modern GUI frameworks and image processing libraries, Thoht allows users to apply various effects like pseudocolor, noise reduction, PCA, and more, all within a sleek and user-friendly interface.
+**Thoht** is a powerful GUI-based application for advanced manuscript image processing tasks. Leveraging modern GUI frameworks and image processing libraries, Thoht allows users to apply various effects like pseudocolor, noise reduction, PCA, and more, all within a sleek and user-friendly interface.
 
 ## **Features**
 - **CustomTkinter Interface:** A modern, dark-themed interface using `customtkinter`.
