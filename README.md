@@ -25,7 +25,7 @@ Follow these steps to install and run Thoht:
 
 2. **Run the application:**
    ```bash
-   pip thoht.py
+   pip thoht app.py
 
 ## **Usage**
 
